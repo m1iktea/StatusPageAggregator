@@ -1,5 +1,7 @@
 # Status Page Aggregator
 
+[中文文档](README.zh.md)
+
 A lightweight dashboard that aggregates status pages from multiple services into a single view. Built with Ruby/Sinatra on the backend and plain JavaScript on the frontend — no heavy frameworks, no external CDN dependencies.
 
 ## Features
