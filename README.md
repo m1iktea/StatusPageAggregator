@@ -73,25 +73,6 @@ secondary:
     type: atlassian
 ```
 
-## Kubernetes Deployment
-
-The `k8s/` directory contains example manifests for deploying on Kubernetes with AWS ALB Ingress Controller.
-
-Before applying, replace the placeholders in the manifests:
-
-| Placeholder | Description |
-|-------------|-------------|
-| `<YOUR_DOMAIN>` | Your ingress hostname |
-| `<YOUR_ACM_CERTIFICATE_ARN>` | AWS ACM certificate ARN |
-| `<YOUR_SUBNET_IDS>` | Comma-separated ALB subnet IDs |
-| `<YOUR_ALB_GROUP_NAME>` | ALB ingress group name |
-| `<YOUR_ECR_REPO>` | Your container image registry (e.g. ECR or Docker Hub) |
-
-```bash
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/ingress.yaml
-```
-
 ## Running locally (without Docker)
 
 Requires Ruby 3.2+ and Bundler.
