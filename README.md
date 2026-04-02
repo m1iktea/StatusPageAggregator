@@ -4,6 +4,8 @@
 
 A lightweight dashboard that aggregates status pages from multiple services into a single view. Built with Ruby/Sinatra on the backend and plain JavaScript on the frontend — no heavy frameworks, no external CDN dependencies.
 
+![Screenshot](docs/screenshot.png)
+
 ## Features
 
 - **Multi-tier monitoring** — Primary services (must-watch) and secondary services displayed separately
