@@ -1,0 +1,164 @@
+<div class="container">
+  <div class="title-bar">
+    <h1>Status Page Aggregator</h1>
+    <div class="title-actions">
+      <span id="last-updated" class="last-updated"></span>
+      <button id="refresh-btn" onclick="manualRefresh()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="s-none">✓ Up</span> — normal
+    <span class="legend-sep">·</span>
+    <span class="s-minor">⚠ Minor</span> — partial degradation
+    <span class="legend-sep">·</span>
+    <span class="s-major">✖ Major</span> — serious outage
+    <span class="legend-sep">·</span>
+    <span class="s-critical">✖ Critical</span> — full outage
+    <span class="legend-sep">·</span>
+    <span class="s-maintenance">🔧 Maintenance</span> — planned work in progress
+    <span class="legend-sep">·</span>
+    <span class="s-unknown">? Unknown</span> — status unavailable
+  </div>
+
+  <div class="section">
+    <h2>Primary Services</h2>
+    <table>
+      <thead class="primary-head">
+        <tr>
+          <th>Service</th>
+          <th>Status</th>
+          <th>Active Events</th>
+        </tr>
+      </thead>
+      <tbody id="primary-tbody">
+        <tr><td colspan="3" class="loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section secondary">
+    <h2>Other Services</h2>
+    <table>
+      <thead class="secondary-head">
+        <tr>
+          <th>Service</th>
+          <th>Status</th>
+          <th>Active Events</th>
+        </tr>
+      </thead>
+      <tbody id="secondary-tbody">
+        <tr><td colspan="3" class="loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const SEVERITY_ORDER = { critical: 0, major: 1, minor: 2, maintenance: 3, unknown: 4, none: 5 };
+
+const INDICATOR_LABEL = {
+  none:        '✓ Up',
+  minor:       '⚠ Minor',
+  major:       '✖ Major',
+  critical:    '✖ Critical',
+  maintenance: '🔧 Maintenance',
+  unknown:     '? Unknown'
+};
+
+const STATUS_LABEL = {
+  in_progress:   'In Progress',
+  investigating: 'Investigating',
+  identified:    'Identified',
+  monitoring:    'Monitoring',
+  active:        'Active',
+  scheduled:     'Scheduled',
+};
+
+function formatStatus(status) {
+  return STATUS_LABEL[status] || String(status).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function sortBySeverity(list) {
+  return [...list].sort((a, b) => {
+    return (SEVERITY_ORDER[a.indicator] ?? 5) - (SEVERITY_ORDER[b.indicator] ?? 5);
+  });
+}
+
+function renderEventsCell(s) {
+  if (s.error) {
+    return `<span class="s-error">${esc(s.error)}</span>`;
+  }
+  if (s.indicator === 'unknown') {
+    return `<span class="italic-gray">${esc(s.description)}</span>`;
+  }
+
+  let html = '';
+  if (s.active_events && s.active_events.length > 0) {
+    const items = s.active_events.map(ev => {
+      const icon = ev.type === 'maintenance' ? '🔧' : '⚠';
+      return `<li><span>${icon}</span><span>${esc(ev.name)} <span class="ev-status">(${esc(formatStatus(ev.status))})</span></span></li>`;
+    }).join('');
+    html += `<ul class="events">${items}</ul>`;
+  } else {
+    html += `<span class="no-events">✓ No active events</span>`;
+  }
+
+  if (s.upcoming_count > 0) {
+    html += `<span class="upcoming-badge">📅 ${s.upcoming_count} upcoming</span>`;
+  }
+  return html;
+}
+
+function renderRows(statuses) {
+  return statuses.map(s => {
+    const statusHtml = s.error
+      ? `<span class="s-error">⚠ Error</span>`
+      : `<span class="s-${esc(s.indicator)}">${INDICATOR_LABEL[s.indicator] || esc(s.indicator)}</span>`;
+
+    return `<tr>
+      <td><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></td>
+      <td>${statusHtml}</td>
+      <td>${renderEventsCell(s)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function fetchStatuses() {
+  return fetch('/statuses')
+    .then(r => r.json())
+    .then(data => {
+      const primary   = sortBySeverity(data.filter(s => s.priority === 'primary'));
+      const secondary = sortBySeverity(data.filter(s => s.priority === 'secondary'));
+      document.getElementById('primary-tbody').innerHTML   = renderRows(primary)   || '<tr><td colspan="3" class="loading">No services configured.</td></tr>';
+      document.getElementById('secondary-tbody').innerHTML = renderRows(secondary) || '<tr><td colspan="3" class="loading">No services configured.</td></tr>';
+      document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleString();
+    })
+    .catch(() => {
+      const msg = '<tr><td colspan="3" class="s-error">Failed to load statuses.</td></tr>';
+      document.getElementById('primary-tbody').innerHTML   = msg;
+      document.getElementById('secondary-tbody').innerHTML = msg;
+    });
+}
+
+function manualRefresh() {
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.textContent = '↻ Refreshing…';
+  fetchStatuses().finally(() => {
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh';
+  });
+}
+
+fetchStatuses();
+setInterval(fetchStatuses, 60000);
+</script>

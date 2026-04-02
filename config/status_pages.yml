@@ -1,0 +1,44 @@
+primary:
+  Claude:
+    url: https://status.claude.com
+    type: atlassian
+  ChatGPT:
+    url: https://status.openai.com
+    type: atlassian
+  Cloudflare:
+    url: https://www.cloudflarestatus.com
+    type: atlassian
+  Datadog:
+    url: https://status.datadoghq.com
+    type: atlassian
+  AWS:
+    url: https://health.aws.amazon.com
+    type: aws
+  Google Cloud:
+    url: https://status.cloud.google.com
+    type: google_cloud
+  Gemini:
+    url: https://status.cloud.google.com
+    link: https://aistudio.google.com/status
+    type: google_cloud
+    filter: gemini
+  JumpCloud:
+    url: https://status.jumpcloud.com
+    type: atlassian
+  Vercel:
+    url: https://www.vercel-status.com
+    type: atlassian
+
+secondary:
+  GitHub:
+    url: https://www.githubstatus.com
+    type: atlassian
+  Sendgrid:
+    url: https://status.sendgrid.com
+    type: atlassian
+  Trello:
+    url: https://trello.status.atlassian.com
+    type: atlassian
+  Zoom:
+    url: https://status.zoom.us
+    type: atlassian

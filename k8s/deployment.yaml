@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: status-page-aggregator
+  namespace: devops
+  labels:
+    app: status-page-aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: status-page-aggregator
+  template:
+    metadata:
+      labels:
+        app: status-page-aggregator
+    spec:
+      containers:
+        - name: status-page-aggregator
+          image: <YOUR_ECR_REPO>/status-page-aggregator:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9292
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: status-page-aggregator
+  namespace: devops
+spec:
+  selector:
+    app: status-page-aggregator
+  ports:
+    - port: 80
+      targetPort: 9292
